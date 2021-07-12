@@ -37,7 +37,7 @@ res = CGI.parse(URI.parse(browser.url).query)
 puts @authorization_code
 
 #url in variables
-response = RestClient::Request.execute(method: 'post',
+token = RestClient::Request.execute(method: 'post',
                                        url: 'https://accounts.spotify.com/api/token',
                                        payload: {
                                          'grant_type' => "authorization_code",
@@ -47,9 +47,9 @@ response = RestClient::Request.execute(method: 'post',
                                          'client_secret' => client_secret
                                        })
 
-access_token = JSON.parse(response)['access_token']
+access_token = JSON.parse(token)['access_token']
 puts access_token
-refresh_token = JSON.parse(response)['refresh_token']
+refresh_token = JSON.parse(token)['refresh_token']
 
 puts 'Bearer' + access_token
 profile = RestClient::Request.execute(method: 'get',
@@ -58,20 +58,26 @@ profile = RestClient::Request.execute(method: 'get',
                                         'Authorization' => 'Bearer ' + access_token,
                                         # Accept: 'application/json',
                                         # Content-Type: 'application/json'
-                                      }) { |response, request, result|
+                                      }) #{ |response, request, result|
 
-  puts response
-  puts request
-  puts result
-}
+#puts response
+# user_id = JSON.parse(response)['id']
+# puts request
+# puts result
+#}
 
-# "Accept: application/json" -H "Content-Type: application/json
+user_id = JSON.parse(profile)['id']
+puts user_id
 
-puts profile.body
 
-
-#Authorization: Basic *<base64 encoded client_id:client_secret>*
-
-#RestClient.post('https://accounts.spotify.com/api/token', payload: grant_type = authorization_code, code , redirect_uri , headers ={ Authorization: Basic *<base64 encoded client_id:client_secret>*)
-
-# https://example.com/callback?code=AQDx3uLGRtEtrk6MazV9QGX4Ga3k7oOzf1-hoAM0uI1P01W6mHrj6u1Cu5BJ-kjanZixw3Pfu6JgH2y87gHYEhWQjfRvg0EKX8xlNjZ50tg95bCPFyykoYZr_Igwn6jtXwlFZQ4j0IXQILv3PIlON1xg6VaI1yvPehEzfDK3CiE
+playlist = RestClient::Request.execute(method: 'post',
+                                       url: "https://api.spotify.com/v1/users/#{user_id}/playlists",
+                                       payload: {
+                                         'scope' => 'playlist-modify-private',
+                                         'name' => 'My new playlist',
+                                         'description' => 'New playlist description',
+                                         'public' => false,
+                                       },
+                                       headers: {
+                                         'Authorization' => 'Bearer ' + access_token,
+                                       })
