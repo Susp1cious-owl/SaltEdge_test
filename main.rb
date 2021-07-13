@@ -55,6 +55,7 @@ puts access_token
 refresh_token = JSON.parse(token)['refresh_token']
 expiry_time = JSON.parse(token)['expires_in']  # authorization code becomes refresh token
 
+
 if expiry_time < 500
   new_token = RestClient::Request.execute(method: 'post',
                                           url: 'https://accounts.spotify.com/api/token',
@@ -71,7 +72,7 @@ puts 'Bearer ' + access_token
 profile = RestClient::Request.execute(method: 'get',
                                       url: 'https://api.spotify.com/v1/me',
                                       headers: {
-                                        'Authorization' => 'Bearer ' + access_token,
+                                        'Authorization' => "Bearer #{access_token}" ,
                                         # Accept: 'application/json',
                                         # Content-Type: 'application/json'
                                       }) # { |response, request, result|
@@ -85,16 +86,18 @@ profile = RestClient::Request.execute(method: 'get',
 user_id = JSON.parse(profile)['id']
 puts user_id
 
-
-playlist = RestClient::Request.execute(method: 'post',
-                                       url: "https://api.spotify.com/v1/users/#{user_id}/playlists",
-                                       payload: {
-                                         'name' => 'My new playlist',
-                                         'description' => 'New playlist description',
-                                         'public' => false
-                                       },
-                                       headers: {
-                                         'Authorization' => 'Bearer ' + access_token
-                                       })
+create_playlist = RestClient::Request.execute(method: "post",
+                                              url: "https://api.spotify.com/v1/users/#{user_id}/playlists",
+                                              payload: {
+                                                "name" => "My new playlist",
+                                                "description" => "new playlist description",
+                                                "public" => false
+                                              }.to_json,
+                                              headers: {
+                                                "Authorization" => "Bearer #{access_token}",
+                                                "Content-Type" => "application/json",
+                                                "Accept" => "application/json"
+                                              })
+puts create_playlist.body
 
 
