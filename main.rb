@@ -140,4 +140,22 @@ reorder_tracks = RestClient::Request.execute(method: "put",
 
 snapshot_id = JSON.parse(reorder_tracks)['snapshot_id']
 puts snapshot_id # works -> gooood
+puts "snapshot_id": snapshot_id
 
+delete_last = RestClient::Request.execute(method: "delete",
+                                          url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
+                                          payload: {
+                                            "tracks": [{
+                                                         "uri": "spotify:track:#{first_track}",
+                                                         "position": [2]
+                                                       }],
+                                            "snapshot_id": snapshot_id
+                                          }.to_json,
+                                          headers: {
+                                            "Authorization" => "Bearer #{access_token}",
+                                            "Content-Type" => "application/json",
+                                            "Accept" => "application/json"
+                                          })
+
+snapshot_id = JSON.parse(delete_last)['snapshot_id']
+puts snapshot_id
