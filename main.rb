@@ -193,11 +193,20 @@ playlist_description = JSON.parse(get_playlist)['description']
 playlist_owner = JSON.parse(get_playlist)['owner']
 playlist_uri = JSON.parse(get_playlist)['uri']
 
-track_id = JSON.parse(get_playlist)['track.id']
+#Playlist(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, Track)
+
+=begin
+for each track do
+Track(a,b,c,d)
+Playlist(a, b, c, Track)
+=end
+
+
+track_id = JSON.parse(get_playlist)['tracks.0.items.id']
 puts track_id
-track_name = JSON.parse(get_playlist)['track.name']
+track_name = JSON.parse(get_playlist)['items.0.tracks.name']
 puts track_name
-track_artist = JSON.parse(get_playlist)['artists']
+track_artist = JSON.parse(get_playlist)['items.0.artists.0.name']
 puts track_artist
 album_name = JSON.parse(get_playlist)['track.album.name']
 puts album_name
