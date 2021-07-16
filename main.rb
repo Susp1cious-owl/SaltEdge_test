@@ -159,3 +159,59 @@ delete_last = RestClient::Request.execute(method: "delete",
 
 snapshot_id = JSON.parse(delete_last)['snapshot_id']
 puts snapshot_id
+
+class Playlist
+  def initialize(id, name, description, owner_name, spotify_url, tracks)
+    @id     = id
+    @name   = name
+    @description = description
+    @owner_name = owner_name
+    @spotify_url = spotify_url
+    @tracks = tracks
+  end
+end
+
+get_playlist = RestClient::Request.execute(method: "get",
+                                           url: "https://api.spotify.com/v1/playlists/#{playlist_id}",
+                                           params: {
+                                             "fields": "name,
+                                                        description,
+                                                        owner,
+                                                        uri,
+                                                        tracks.items(track(id, name, artists, album(name), uri))"
+                                           }.to_json,
+                                           headers: {
+                                             "Authorization" => "Bearer #{access_token}",
+                                             "Content-Type" => "application/json",
+                                             "Accept" => "application/json"
+                                           })
+
+puts get_playlist.body
+
+playlist_name = JSON.parse(get_playlist)['name']
+playlist_description = JSON.parse(get_playlist)['description']
+playlist_owner = JSON.parse(get_playlist)['owner']
+playlist_uri = JSON.parse(get_playlist)['uri']
+
+track_id = JSON.parse(get_playlist)['track.id']
+puts track_id
+track_name = JSON.parse(get_playlist)['track.name']
+puts track_name
+track_artist = JSON.parse(get_playlist)['artists']
+puts track_artist
+album_name = JSON.parse(get_playlist)['track.album.name']
+puts album_name
+track_uri = JSON.parse(get_playlist)['track.uri']
+puts track_uri
+
+
+
+class Track
+  def initialize(id, name, artist_name, album_name, spotify_url)
+    @id     = id
+    @name   = name
+    @artist_name = artist_name
+    @album_name = album_name
+    @spotify_url = spotify_url
+  end
+end
