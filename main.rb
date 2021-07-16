@@ -99,5 +99,45 @@ create_playlist = RestClient::Request.execute(method: "post",
                                                 "Accept" => "application/json"
                                               })
 puts create_playlist.body
+playlist_id = JSON.parse(create_playlist)['id']
+puts playlist_id
 
+first_track = '3uCth4TIWyeQDnj3YbAVQB'
+second_track = '2fIBmScNzkGmSJ3y2XsmEI'
+third_track = '7MufKxirS2VnFptXKAoiNK'
+
+add_tracks = RestClient::Request.execute(method: "post",
+                                         url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
+                                         payload: {
+                                           "uris": ["spotify:track:#{first_track}",
+                                                    "spotify:track:#{second_track}",
+                                                    "spotify:track:#{third_track}"]
+                                           #postion add? still works on postman with value of 2
+                                         }.to_json,
+                                         headers: {
+                                           "Authorization" => "Bearer #{access_token}",
+                                           "Content-Type" => "application/json",
+                                           "Accept" => "application/json"
+                                         })
+
+snapshot_id = JSON.parse(add_tracks)['snapshot_id']
+
+puts snapshot_id
+
+reorder_tracks = RestClient::Request.execute(method: "put",
+                                             url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
+                                             payload: {
+                                               "range_start": 0,
+                                               "insert_before": 3,
+                                               "range_length": 2,
+                                               "snapshot_id": snapshot_id
+                                             }.to_json,
+                                             headers: {
+                                               "Authorization" => "Bearer #{access_token}",
+                                               "Content-Type" => "application/json",
+                                               "Accept" => "application/json"
+                                             })
+
+snapshot_id = JSON.parse(reorder_tracks)['snapshot_id']
+puts snapshot_id # works -> gooood
 
