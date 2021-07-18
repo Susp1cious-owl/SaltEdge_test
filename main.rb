@@ -7,6 +7,7 @@ require 'uri'
 require 'net/http'
 require 'pry'
 require 'rubocop'
+require 'date'
 # Requesting Authorization
 
 # setting query parameters
@@ -53,14 +54,17 @@ token = RestClient::Request.execute(method: 'post',
 access_token = JSON.parse(token)['access_token']
 puts access_token
 refresh_token = JSON.parse(token)['refresh_token']
-expiry_time = JSON.parse(token)['expires_in']  # authorization code becomes refresh token
+expires_in = JSON.parse(token)['expires_in']  # authorization code becomes refresh token
 
+expiry_date = DateTime.now + expires_in * 0.00000094444 #equivalent of 5 mins added
+puts expiry_date
+puts DateTime.now
 
-if expiry_time < 500
+if expiry_date < DateTime.now
   new_token = RestClient::Request.execute(method: 'post',
                                           url: 'https://accounts.spotify.com/api/token',
                                           payload: {
-                                            'grant_type' => refresh_token,
+                                            'grant_type' => 'refresh_token',
                                             'refresh_token' => refresh_token,
                                             'client_id' => client_id,
                                             'client_secret' => client_secret
@@ -170,6 +174,11 @@ class Playlist
     @spotify_url = spotify_url
     @tracks = tracks
   end
+
+  def to_h_json
+    hash = { "name": "#{@name}", "description": "#{@description}", "owner_name": "#{@owner_name}", "spotify_url": "#{@spotify_url}", "id": "#{@id}", "tracks": "#{@tracks}" }
+    puts hash.to_json
+  end
 end
 
 # create a track class
@@ -181,6 +190,12 @@ class Track
     @album_name = album_name
     @spotify_url = spotify_url
   end
+
+  def to_h_json
+    hash = [{ "name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}" }]
+    puts hash.to_json
+  end
+
 end
 
 get_playlist = RestClient::Request.execute(method: "get",
@@ -203,41 +218,19 @@ puts get_playlist.body
 playlist_name = JSON.parse(get_playlist)['name']
 playlist_description = JSON.parse(get_playlist)['description']
 playlist_owner = JSON.parse(get_playlist)['owner']['display_name']
-playlist_uri = JSON.parse(get_playlist)['uri']
-
-#Playlist(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, Track)
-
-=begin
-for each track do
-Track(a,b,c,d)
-Playlist(a, b, c, Track)
-=end
-
-=begin
-track_id = JSON.parse(get_playlist)['tracks']['items'][0]['track']['id'] # works
-puts track_id
-track_name = JSON.parse(get_playlist)['tracks']['items'][0]['track']['name'] # works
-puts track_name
-track_artist = JSON.parse(get_playlist)['tracks']['items'][0]['track']['artists'][0]['name'] # works
-puts track_artist
-album_name = JSON.parse(get_playlist)['tracks']['items'][0]['track']['album']['name'] # works
-puts album_name
-track_uri = JSON.parse(get_playlist)['tracks']['items'][0]['track']['uri'] # works
-puts track_uri
-=end
+playlist_uri = JSON.parse(get_playlist)['external_urls']['spotify']
 
 [0, 1].each do |i|
   track_id = JSON.parse(get_playlist)['tracks']['items'][i]['track']['id'] # works
-  puts track_id
   track_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['name'] # works
-  puts track_name
   track_artist = JSON.parse(get_playlist)['tracks']['items'][i]['track']['artists'][0]['name'] # works
-  puts track_artist
   album_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['album']['name'] # works
-  puts album_name
-  track_uri = JSON.parse(get_playlist)['tracks']['items'][i]['track']['uri'] # works
-  puts track_uri
-  Track.new(track_id, track_name, track_artist, album_name, track_uri)
-  puts Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, :Track)
+  track_uri = JSON.parse(get_playlist)['tracks']['items'][i]['track']['external_urls']['spotify'] # works
+  t = Track.new(track_id, track_name, track_artist, album_name, track_uri)
+  p = Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, t.to_h_json)
+  p.to_h_json
 end
+
+
+
 
