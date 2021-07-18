@@ -65,14 +65,14 @@ if expiry_time < 500
                                             'client_id' => client_id,
                                             'client_secret' => client_secret
   })
-  access_token = JSON.parse(new_token)['access_token']
+ access_token = JSON.parse(new_token)['access_token']
 end
 
-puts 'Bearer ' + access_token
+puts "Bearer #{access_token}"
 profile = RestClient::Request.execute(method: 'get',
                                       url: 'https://api.spotify.com/v1/me',
                                       headers: {
-                                        'Authorization' => "Bearer #{access_token}" ,
+                                        'Authorization' => "Bearer #{access_token}"
                                         # Accept: 'application/json',
                                         # Content-Type: 'application/json'
                                       }) # { |response, request, result|
@@ -160,6 +160,7 @@ delete_last = RestClient::Request.execute(method: "delete",
 snapshot_id = JSON.parse(delete_last)['snapshot_id']
 puts snapshot_id
 
+# creating a playlist class
 class Playlist
   def initialize(id, name, description, owner_name, spotify_url, tracks)
     @id     = id
@@ -168,6 +169,17 @@ class Playlist
     @owner_name = owner_name
     @spotify_url = spotify_url
     @tracks = tracks
+  end
+end
+
+# create a track class
+class Track
+  def initialize(id, name, artist_name, album_name, spotify_url)
+    @id     = id
+    @name   = name
+    @artist_name = artist_name
+    @album_name = album_name
+    @spotify_url = spotify_url
   end
 end
 
@@ -190,7 +202,7 @@ puts get_playlist.body
 
 playlist_name = JSON.parse(get_playlist)['name']
 playlist_description = JSON.parse(get_playlist)['description']
-playlist_owner = JSON.parse(get_playlist)['owner']
+playlist_owner = JSON.parse(get_playlist)['owner']['display_name']
 playlist_uri = JSON.parse(get_playlist)['uri']
 
 #Playlist(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, Track)
@@ -201,26 +213,31 @@ Track(a,b,c,d)
 Playlist(a, b, c, Track)
 =end
 
-
-track_id = JSON.parse(get_playlist)['tracks.0.items.id']
+=begin
+track_id = JSON.parse(get_playlist)['tracks']['items'][0]['track']['id'] # works
 puts track_id
-track_name = JSON.parse(get_playlist)['items.0.tracks.name']
+track_name = JSON.parse(get_playlist)['tracks']['items'][0]['track']['name'] # works
 puts track_name
-track_artist = JSON.parse(get_playlist)['items.0.artists.0.name']
+track_artist = JSON.parse(get_playlist)['tracks']['items'][0]['track']['artists'][0]['name'] # works
 puts track_artist
-album_name = JSON.parse(get_playlist)['track.album.name']
+album_name = JSON.parse(get_playlist)['tracks']['items'][0]['track']['album']['name'] # works
 puts album_name
-track_uri = JSON.parse(get_playlist)['track.uri']
+track_uri = JSON.parse(get_playlist)['tracks']['items'][0]['track']['uri'] # works
 puts track_uri
+=end
 
-
-
-class Track
-  def initialize(id, name, artist_name, album_name, spotify_url)
-    @id     = id
-    @name   = name
-    @artist_name = artist_name
-    @album_name = album_name
-    @spotify_url = spotify_url
-  end
+[0, 1].each do |i|
+  track_id = JSON.parse(get_playlist)['tracks']['items'][i]['track']['id'] # works
+  puts track_id
+  track_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['name'] # works
+  puts track_name
+  track_artist = JSON.parse(get_playlist)['tracks']['items'][i]['track']['artists'][0]['name'] # works
+  puts track_artist
+  album_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['album']['name'] # works
+  puts album_name
+  track_uri = JSON.parse(get_playlist)['tracks']['items'][i]['track']['uri'] # works
+  puts track_uri
+  Track.new(track_id, track_name, track_artist, album_name, track_uri)
+  puts Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, :Track)
 end
+
