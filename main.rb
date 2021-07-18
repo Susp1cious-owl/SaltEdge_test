@@ -55,12 +55,9 @@ access_token = JSON.parse(token)['access_token']
 puts access_token
 refresh_token = JSON.parse(token)['refresh_token']
 expires_in = JSON.parse(token)['expires_in']  # authorization code becomes refresh token
+expires_at = DateTime.now + expires_in * 0.00000095 #equivalent of 5 mins added
 
-expiry_date = DateTime.now + expires_in * 0.00000094444 #equivalent of 5 mins added
-puts expiry_date
-puts DateTime.now
-
-if expiry_date < DateTime.now
+if expires_at < DateTime.now
   new_token = RestClient::Request.execute(method: 'post',
                                           url: 'https://accounts.spotify.com/api/token',
                                           payload: {
@@ -189,11 +186,20 @@ class Track
     @artist_name = artist_name
     @album_name = album_name
     @spotify_url = spotify_url
+    @array = []
   end
 
-  def to_h_json
-    hash = [{ "name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}" }]
-    puts hash.to_json
+  def add_hashes
+    if @array.empty?
+      @array = [ "name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}" ]
+    else
+      @array.append("name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}")
+    end
+  end
+
+  def json_result
+    hash = Hash(*@array)
+    return hash.to_json
   end
 
 end
@@ -219,6 +225,7 @@ playlist_name = JSON.parse(get_playlist)['name']
 playlist_description = JSON.parse(get_playlist)['description']
 playlist_owner = JSON.parse(get_playlist)['owner']['display_name']
 playlist_uri = JSON.parse(get_playlist)['external_urls']['spotify']
+track_hash = []
 
 [0, 1].each do |i|
   track_id = JSON.parse(get_playlist)['tracks']['items'][i]['track']['id'] # works
@@ -227,10 +234,11 @@ playlist_uri = JSON.parse(get_playlist)['external_urls']['spotify']
   album_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['album']['name'] # works
   track_uri = JSON.parse(get_playlist)['tracks']['items'][i]['track']['external_urls']['spotify'] # works
   t = Track.new(track_id, track_name, track_artist, album_name, track_uri)
-  p = Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, t.to_h_json)
-  p.to_h_json
+  t.add_hashes
+  track_hash[i] = t.json_result
 end
 
-
+p = Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, track_hash)
+p.to_h_json
 
 
