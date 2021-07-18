@@ -1,21 +1,21 @@
-require 'watir'
-require 'rest-client'
-require 'json'
-require 'rspec'
-require 'cgi'
-require 'uri'
-require 'net/http'
-require 'pry'
-require 'rubocop'
-require 'date'
+require "watir"
+require "rest-client"
+require "json"
+require "rspec"
+require "cgi"
+require "uri"
+require "net/http"
+require "pry"
+require "rubocop"
+require "date"
 # Requesting Authorization
 
 # setting query parameters
-client_id = '24453721197f430081da7ff7138abc80'
-response_type = 'code'
-redirect_uri = 'https://example.com/callback'
-client_secret = 'ef229a536b01493d856654d568488eb9'
-scope = 'playlist-modify-public playlist-modify-private'
+client_id = "24453721197f430081da7ff7138abc80"
+response_type = "code"
+redirect_uri = "https://example.com/callback"
+client_secret = "ef229a536b01493d856654d568488eb9"
+scope = "playlist-modify-public playlist-modify-private"
 
 # creating the URL
 url = "https://accounts.spotify.com/authorize?client_id=#{client_id}&response_type=#{response_type}&redirect_uri=#{redirect_uri}&scope=#{scope}"
@@ -24,67 +24,60 @@ url = "https://accounts.spotify.com/authorize?client_id=#{client_id}&response_ty
 browser = Watir::Browser.new
 browser.goto url
 
-browser.text_field(id: 'login-username').set('vadim.ojog@yahoo.com')
-browser.text_field(id: 'login-password').set('12345670000')
-browser.button(id: 'login-button').click
+browser.text_field(id: "login-username").set("vadim.ojog@yahoo.com")
+browser.text_field(id: "login-password").set("12345670000")
+browser.button(id: "login-button").click
 
 # browser.button(id: "auth-accept").wait_until_present(timeout: 3)
 
 sleep 1
 
-# browser.button(id: 'auth-accept').click
+# browser.button(id: "auth-accept").click
 
 sleep 1
 
 res = CGI.parse(URI.parse(browser.url).query)
-@authorization_code = res['code']
+@authorization_code = res["code"]
 puts @authorization_code
 
 # url in variables
-token = RestClient::Request.execute(method: 'post',
-                                    url: 'https://accounts.spotify.com/api/token',
+token = RestClient::Request.execute(method: "post",
+                                    url: "https://accounts.spotify.com/api/token",
                                     payload: {
-                                      'grant_type' => 'authorization_code',
-                                      'code' => @authorization_code[0],
-                                      'redirect_uri' => redirect_uri,
-                                      'client_id' => client_id,
-                                      'client_secret' => client_secret
+                                      "grant_type" => "authorization_code",
+                                      "code" => @authorization_code[0],
+                                      "redirect_uri" => redirect_uri,
+                                      "client_id" => client_id,
+                                      "client_secret" => client_secret
                                     })
 
-access_token = JSON.parse(token)['access_token']
+access_token = JSON.parse(token)["access_token"]
 puts access_token
-refresh_token = JSON.parse(token)['refresh_token']
-expires_in = JSON.parse(token)['expires_in']  # authorization code becomes refresh token
-expires_at = DateTime.now + expires_in * 0.00000095 #equivalent of 5 mins added
+refresh_token = JSON.parse(token)["refresh_token"]
+expires_in = JSON.parse(token)["expires_in"] # authorization code becomes refresh token
+expires_at = DateTime.now + expires_in * 0.00000095 # equivalent of 5 mins added
 
 if expires_at < DateTime.now
-  new_token = RestClient::Request.execute(method: 'post',
-                                          url: 'https://accounts.spotify.com/api/token',
+  new_token = RestClient::Request.execute(method: "post",
+                                          url: "https://accounts.spotify.com/api/token",
                                           payload: {
-                                            'grant_type' => 'refresh_token',
-                                            'refresh_token' => refresh_token,
-                                            'client_id' => client_id,
-                                            'client_secret' => client_secret
-  })
- access_token = JSON.parse(new_token)['access_token']
+                                            "grant_type" => "refresh_token",
+                                            "refresh_token" => refresh_token,
+                                            "client_id" => client_id,
+                                            "client_secret" => client_secret
+                                          })
+  access_token = JSON.parse(new_token)["access_token"]
 end
 
 puts "Bearer #{access_token}"
-profile = RestClient::Request.execute(method: 'get',
-                                      url: 'https://api.spotify.com/v1/me',
+
+profile = RestClient::Request.execute(method: "get",
+                                      url: "https://api.spotify.com/v1/me",
                                       headers: {
-                                        'Authorization' => "Bearer #{access_token}"
-                                        # Accept: 'application/json',
-                                        # Content-Type: 'application/json'
-                                      }) # { |response, request, result|
+                                        "Authorization" => "Bearer #{access_token}"
+                                      })
 
-# puts response
-# user_id = JSON.parse(response)['id']
-# puts request
-# puts result
-# }
-
-user_id = JSON.parse(profile)['id']
+user_id = JSON.parse(profile)["id"]
 puts user_id
 
 create_playlist = RestClient::Request.execute(method: "post",
@@ -99,21 +92,22 @@ create_playlist = RestClient::Request.execute(method: "post",
                                                 "Content-Type" => "application/json",
                                                 "Accept" => "application/json"
                                               })
+
 puts create_playlist.body
-playlist_id = JSON.parse(create_playlist)['id']
+playlist_id = JSON.parse(create_playlist)["id"]
 puts playlist_id
 
-first_track = '3uCth4TIWyeQDnj3YbAVQB'
-second_track = '2fIBmScNzkGmSJ3y2XsmEI'
-third_track = '7MufKxirS2VnFptXKAoiNK'
+first_track = "3uCth4TIWyeQDnj3YbAVQB"
+second_track = "2fIBmScNzkGmSJ3y2XsmEI"
+third_track = "7MufKxirS2VnFptXKAoiNK"
 
 add_tracks = RestClient::Request.execute(method: "post",
                                          url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
                                          payload: {
-                                           "uris": ["spotify:track:#{first_track}",
-                                                    "spotify:track:#{second_track}",
-                                                    "spotify:track:#{third_track}"]
-                                           #postion add? still works on postman with value of 2
+                                           uris: ["spotify:track:#{first_track}",
+                                                  "spotify:track:#{second_track}",
+                                                  "spotify:track:#{third_track}"]
+                                           # postion add? still works on postman with value of 2
                                          }.to_json,
                                          headers: {
                                            "Authorization" => "Bearer #{access_token}",
@@ -121,17 +115,17 @@ add_tracks = RestClient::Request.execute(method: "post",
                                            "Accept" => "application/json"
                                          })
 
-snapshot_id = JSON.parse(add_tracks)['snapshot_id']
+snapshot_id = JSON.parse(add_tracks)["snapshot_id"]
 
 puts snapshot_id
 
 reorder_tracks = RestClient::Request.execute(method: "put",
                                              url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
                                              payload: {
-                                               "range_start": 0,
-                                               "insert_before": 3,
-                                               "range_length": 2,
-                                               "snapshot_id": snapshot_id
+                                               range_start: 0,
+                                               insert_before: 3,
+                                               range_length: 2,
+                                               snapshot_id: snapshot_id
                                              }.to_json,
                                              headers: {
                                                "Authorization" => "Bearer #{access_token}",
@@ -139,18 +133,18 @@ reorder_tracks = RestClient::Request.execute(method: "put",
                                                "Accept" => "application/json"
                                              })
 
-snapshot_id = JSON.parse(reorder_tracks)['snapshot_id']
+snapshot_id = JSON.parse(reorder_tracks)["snapshot_id"]
 puts snapshot_id # works -> gooood
-puts "snapshot_id": snapshot_id
+puts snapshot_id: snapshot_id
 
 delete_last = RestClient::Request.execute(method: "delete",
                                           url: "https://api.spotify.com/v1/playlists/#{playlist_id}/tracks",
                                           payload: {
-                                            "tracks": [{
-                                                         "uri": "spotify:track:#{first_track}",
-                                                         "position": [2]
-                                                       }],
-                                            "snapshot_id": snapshot_id
+                                            tracks: [{
+                                                       uri: "spotify:track:#{first_track}",
+                                                       position: [2]
+                                                     }],
+                                            snapshot_id: snapshot_id
                                           }.to_json,
                                           headers: {
                                             "Authorization" => "Bearer #{access_token}",
@@ -158,14 +152,14 @@ delete_last = RestClient::Request.execute(method: "delete",
                                             "Accept" => "application/json"
                                           })
 
-snapshot_id = JSON.parse(delete_last)['snapshot_id']
+snapshot_id = JSON.parse(delete_last)["snapshot_id"]
 puts snapshot_id
 
 # creating a playlist class
 class Playlist
   def initialize(id, name, description, owner_name, spotify_url, tracks)
-    @id     = id
-    @name   = name
+    @id = id
+    @name = name
     @description = description
     @owner_name = owner_name
     @spotify_url = spotify_url
@@ -173,7 +167,7 @@ class Playlist
   end
 
   def to_h_json
-    hash = { "name": "#{@name}", "description": "#{@description}", "owner_name": "#{@owner_name}", "spotify_url": "#{@spotify_url}", "id": "#{@id}", "tracks": "#{@tracks}" }
+    hash = {name: @name.to_s, description: @description.to_s, owner_name: @owner_name.to_s, spotify_url: @spotify_url.to_s, id: @id.to_s, tracks: @tracks.to_s}
     puts hash.to_json
   end
 end
@@ -181,8 +175,8 @@ end
 # create a track class
 class Track
   def initialize(id, name, artist_name, album_name, spotify_url)
-    @id     = id
-    @name   = name
+    @id = id
+    @name = name
     @artist_name = artist_name
     @album_name = album_name
     @spotify_url = spotify_url
@@ -191,23 +185,22 @@ class Track
 
   def add_hashes
     if @array.empty?
-      @array = [ "name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}" ]
+      @array = [name: @name.to_s, artist_name: @artist_name.to_s, album_name: @album_name.to_s, spotify_uri: @spotify_url.to_s, id: @id.to_s]
     else
-      @array.append("name": "#{@name}", "artist_name": "#{@artist_name}", "album_name": "#{@album_name}", "spotify_uri": "#{@spotify_url}", "id": "#{@id}")
+      @array.append(name: @name.to_s, artist_name: @artist_name.to_s, album_name: @album_name.to_s, spotify_uri: @spotify_url.to_s, id: @id.to_s)
     end
   end
 
   def json_result
     hash = Hash(*@array)
-    return hash.to_json
+    hash.to_json
   end
-
 end
 
 get_playlist = RestClient::Request.execute(method: "get",
                                            url: "https://api.spotify.com/v1/playlists/#{playlist_id}",
                                            params: {
-                                             "fields": "name,
+                                             fields: "name,
                                                         description,
                                                         owner,
                                                         uri,
@@ -221,18 +214,18 @@ get_playlist = RestClient::Request.execute(method: "get",
 
 puts get_playlist.body
 
-playlist_name = JSON.parse(get_playlist)['name']
-playlist_description = JSON.parse(get_playlist)['description']
-playlist_owner = JSON.parse(get_playlist)['owner']['display_name']
-playlist_uri = JSON.parse(get_playlist)['external_urls']['spotify']
+playlist_name = JSON.parse(get_playlist)["name"]
+playlist_description = JSON.parse(get_playlist)["description"]
+playlist_owner = JSON.parse(get_playlist)["owner"]["display_name"]
+playlist_uri = JSON.parse(get_playlist)["external_urls"]["spotify"]
 track_hash = []
 
 [0, 1].each do |i|
-  track_id = JSON.parse(get_playlist)['tracks']['items'][i]['track']['id'] # works
-  track_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['name'] # works
-  track_artist = JSON.parse(get_playlist)['tracks']['items'][i]['track']['artists'][0]['name'] # works
-  album_name = JSON.parse(get_playlist)['tracks']['items'][i]['track']['album']['name'] # works
-  track_uri = JSON.parse(get_playlist)['tracks']['items'][i]['track']['external_urls']['spotify'] # works
+  track_id = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["id"] # works
+  track_name = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["name"] # works
+  track_artist = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["artists"][0]["name"] # works
+  album_name = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["album"]["name"] # works
+  track_uri = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["external_urls"]["spotify"] # works
   t = Track.new(track_id, track_name, track_artist, album_name, track_uri)
   t.add_hashes
   track_hash[i] = t.json_result
@@ -240,5 +233,3 @@ end
 
 p = Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, track_hash)
 p.to_h_json
-
-
