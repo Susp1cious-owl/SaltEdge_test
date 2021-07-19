@@ -212,10 +212,10 @@ get_playlist = RestClient::Request.execute(method: "get",
                                            url: "https://api.spotify.com/v1/playlists/#{playlist_id}",
                                            params: {
                                              fields: "name,
-                                                        description,
-                                                        owner,
-                                                        uri,
-                                                        tracks.items(track(id, name, artists, album(name), uri))"
+                                                      description,
+                                                      owner,
+                                                      uri,
+                                                      tracks.items(track(id, name, artists, album(name), uri))"
                                            }.to_json,
                                            headers: {
                                              "Authorization" => "Bearer #{access_token}",
