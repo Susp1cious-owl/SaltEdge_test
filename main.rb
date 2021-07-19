@@ -8,7 +8,7 @@ require "pry"
 require "rubocop"
 require "date"
 
-# setting query parameters
+# setting up query parameters
 client_id = "24453721197f430081da7ff7138abc80"
 response_type = "code"
 redirect_uri = "https://example.com/callback"
@@ -18,7 +18,7 @@ scope = "playlist-modify-public playlist-modify-private"
 # requesting authorization
 url = "https://accounts.spotify.com/authorize?client_id=#{client_id}&response_type=#{response_type}&redirect_uri=#{redirect_uri}&scope=#{scope}"
 
-# authorizing using Watir
+# starting Watir
 browser = Watir::Browser.new
 browser.goto url
 
@@ -40,6 +40,7 @@ sleep 1
 # get the authorization-code
 res = CGI.parse(URI.parse(browser.url).query)
 @authorization_code = res["code"]
+puts "authorization_code = ", @authorization_code
 
 # post request to get the access token, refresh token and the expiry time
 token = RestClient::Request.execute(method: "post",
@@ -53,10 +54,13 @@ token = RestClient::Request.execute(method: "post",
                                     })
 
 access_token = JSON.parse(token)["access_token"]
+puts "access token = ", access_token
 refresh_token = JSON.parse(token)["refresh_token"]
+puts "refresh token = ", refresh_token
 expires_in = JSON.parse(token)["expires_in"]
 
 expires_at = DateTime.now + expires_in * 0.00000095 # equivalent of 5 mins added, time of expiration with the current Date and time standards
+puts "expires_at = ", expires_at
 
 # condition to send the refresh token and get a new access token
 if expires_at < DateTime.now
@@ -69,6 +73,7 @@ if expires_at < DateTime.now
                                             "client_secret" => client_secret
                                           })
   access_token = JSON.parse(new_token)["access_token"]
+  puts "new access token = ", access_token
 end
 
 # get request to get user_id
@@ -79,6 +84,7 @@ profile = RestClient::Request.execute(method: "get",
                                       })
 
 user_id = JSON.parse(profile)["id"]
+puts "user_id = ", user_id
 
 # post request to create a playlist and get its id
 create_playlist = RestClient::Request.execute(method: "post",
@@ -95,6 +101,7 @@ create_playlist = RestClient::Request.execute(method: "post",
                                               })
 
 playlist_id = JSON.parse(create_playlist)["id"]
+puts "playlist_id = ", playlist_id
 
 #track id's which can be accessed via right click on spotify as mentioned in the spotify manual
 first_track = "3uCth4TIWyeQDnj3YbAVQB"
@@ -114,6 +121,7 @@ add_tracks = RestClient::Request.execute(method: "post",
                                          })
 
 snapshot_id = JSON.parse(add_tracks)["snapshot_id"]
+puts "add tracks request = ", add_tracks.body
 
 # put method to move the first track to the last position
 reorder_tracks = RestClient::Request.execute(method: "put",
@@ -132,6 +140,7 @@ reorder_tracks = RestClient::Request.execute(method: "put",
 
 # snapshot id is a proof that the last changes to the playlist went successful
 snapshot_id = JSON.parse(reorder_tracks)["snapshot_id"]
+puts "new snapshot id after reorder tracks = ", snapshot_id
 
 # delete request to delete the last track form the playlist
 delete_last = RestClient::Request.execute(method: "delete",
@@ -150,7 +159,7 @@ delete_last = RestClient::Request.execute(method: "delete",
                                           })
 
 snapshot_id = JSON.parse(delete_last)["snapshot_id"]
-puts snapshot_id
+puts "new snapshot id after delete last track = ", snapshot_id
 
 # creating a playlist class
 class Playlist
@@ -214,6 +223,8 @@ get_playlist = RestClient::Request.execute(method: "get",
                                              "Accept" => "application/json"
                                            })
 
+puts "Get playlist details request body = ", get_playlist.body
+
 # variables take the values needed for Playlist class
 playlist_name = JSON.parse(get_playlist)["name"]
 playlist_description = JSON.parse(get_playlist)["description"]
@@ -223,7 +234,6 @@ track_hash = [] # hash for storing each of the tracks
 
 # loop to access both of the track details from the get request, if you change the loop iteration you can do that to not only 2 but more tracks
 [0, 1].each do |i|
-
   # variables to store each track's details per iteration
   track_id = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["id"]
   track_name = JSON.parse(get_playlist)["tracks"]["items"][i]["track"]["name"]
@@ -235,8 +245,10 @@ track_hash = [] # hash for storing each of the tracks
   t = Track.new(track_id, track_name, track_artist, album_name, track_uri)
   t.add_hashes # stores the tracks
   track_hash[i] = t.json_result # converts the data stored into hash and json
+  puts "track #{i} = ",  track_hash[i]
 end
 
 # make a variable p of type Playlist class and initializes it
 p = Playlist.new(playlist_id, playlist_name, playlist_description, playlist_owner, playlist_uri, track_hash)
+puts "Shows the populated playlist, the final output of the task = "
 p.to_h_json # outputs the stored data in json format
