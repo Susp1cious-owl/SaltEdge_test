@@ -168,7 +168,7 @@ snapshot_id = JSON.parse(delete_last)["snapshot_id"]
 puts "new snapshot id after delete last track = ", snapshot_id
 
 #require relative the class file to be able to use classes and their functions
-require_relative "class1.rb"
+require_relative "class.rb"
 
 # get request to get all the details of my playlist, including track's details
 get_playlist = RestClient::Request.execute(method: "get",
