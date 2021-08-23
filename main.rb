@@ -9,10 +9,15 @@ require "rubocop"
 require "date"
 
 # setting up query parameters
-client_id = "24453721197f430081da7ff7138abc80"
+file = File.open(".bundle/confidential.txt")
+file_data = File.read(".bundle/confidential.txt")
+data_hash = JSON.parse(file_data)
+file.close
+
+client_id = data_hash["client_id"]
 response_type = "code"
 redirect_uri = "https://example.com/callback"
-client_secret = "ef229a536b01493d856654d568488eb9"
+client_secret = data_hash["client_secret"]
 scope = "playlist-modify-public playlist-modify-private"
 
 # requesting authorization
