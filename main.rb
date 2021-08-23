@@ -109,7 +109,7 @@ create_playlist = RestClient::Request.execute(method: "post",
 playlist_id = JSON.parse(create_playlist)["id"]
 puts "playlist_id = ", playlist_id
 
-#track id's which can be accessed via right click on spotify as mentioned in the spotify manual
+# track id's which can be accessed via right click on spotify as mentioned in the spotify manual
 first_track = "3uCth4TIWyeQDnj3YbAVQB"
 second_track = "2fIBmScNzkGmSJ3y2XsmEI"
 third_track = "7MufKxirS2VnFptXKAoiNK"
