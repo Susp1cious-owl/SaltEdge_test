@@ -8,12 +8,13 @@ require "pry"
 require "rubocop"
 require "date"
 
-# setting up query parameters
+# getting confidential info from a file
 file = File.open(".bundle/confidential.txt")
 file_data = File.read(".bundle/confidential.txt")
 data_hash = JSON.parse(file_data)
 file.close
 
+# setting up query parameters
 client_id = data_hash["client_id"]
 response_type = "code"
 redirect_uri = "https://example.com/callback"
