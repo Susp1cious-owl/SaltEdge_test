@@ -8,6 +8,12 @@ require "pry"
 require "rubocop"
 require "date"
 
+# require relative the class file to be able to use classes and their functions
+require_relative "class.rb"
+
+# require relative to access the classes used for rspec tests
+require_relative "rspec_class.rb"
+
 # getting confidential info from a file
 file = File.open(".bundle/confidential.txt")
 file_data = File.read(".bundle/confidential.txt")
@@ -127,7 +133,21 @@ add_tracks = RestClient::Request.execute(method: "post",
                                          })
 
 snapshot_id = JSON.parse(add_tracks)["snapshot_id"]
-puts "add tracks request = ", add_tracks.body
+
+RSpec.describe Snapshot do
+  context "snapshot id is given when an action is successfully performed" do
+    it "checks if snapshot_id has a value" do
+      snapshot = Snapshot.new(snapshot_id)
+      snapshot.check_value
+    end
+
+    it "checks if it has the required number of characters" do
+      expect(snapshot_id.length).to eq(56)
+      puts "add tracks request = ", add_tracks.body
+    end
+  end
+end
+
 
 # put method to move the first track to the last position
 reorder_tracks = RestClient::Request.execute(method: "put",
@@ -146,7 +166,20 @@ reorder_tracks = RestClient::Request.execute(method: "put",
 
 # snapshot id is a proof that the last changes to the playlist went successful
 snapshot_id = JSON.parse(reorder_tracks)["snapshot_id"]
-puts "new snapshot id after reorder tracks = ", snapshot_id
+
+RSpec.describe Snapshot do
+  context "snapshot id is given when an action is successfully performed" do
+    it "checks if snapshot_id has a value" do
+      snapshot = Snapshot.new(snapshot_id)
+      snapshot.check_value
+    end
+
+    it "checks if it has the required number of characters" do
+      expect(snapshot_id.length).to eq(56)
+      puts "new snapshot id after reorder tracks = ", reorder_tracks.body
+    end
+  end
+end
 
 # delete request to delete the last track form the playlist
 delete_last = RestClient::Request.execute(method: "delete",
@@ -165,10 +198,20 @@ delete_last = RestClient::Request.execute(method: "delete",
                                           })
 
 snapshot_id = JSON.parse(delete_last)["snapshot_id"]
-puts "new snapshot id after delete last track = ", snapshot_id
 
-# require relative the class file to be able to use classes and their functions
-require_relative "class.rb"
+RSpec.describe Snapshot do
+  context "snapshot id is given when an action is successfully performed" do
+    it "checks if snapshot_id has a value" do
+      snapshot = Snapshot.new(snapshot_id)
+      snapshot.check_value
+    end
+
+    it "checks if it has the required number of characters" do
+      expect(snapshot_id.length).to eq(56)
+      puts "new snapshot id after delete last track = ", delete_last.body
+    end
+  end
+end
 
 # get request to get all the details of my playlist, including track's details
 get_playlist = RestClient::Request.execute(method: "get",
