@@ -39,13 +39,7 @@ browser.text_field(id: "login-username").set("vadim.ojog@yahoo.com")
 browser.text_field(id: "login-password").set("12345670000")
 browser.button(id: "login-button").click
 
-# if you have auth-accept page then uncomment next two lines and delete the sleep between them! -- VERY IMPORTANT!
-
-# browser.button(id: "auth-accept").wait_until_present(timeout: 3) # uncomment this if auth accept appears
-
-sleep 1 # browser to not close in  # delete this if auth accept appears
-
-#browser.button(id: "auth-accept").click # uncomment this if auth-accept appears
+sleep 1 # browser to not close in
 
 sleep 1
 
@@ -125,7 +119,6 @@ end
 
 user_id = JSON.parse(profile)["id"]
 puts "user_id = ", user_id
-puts "get request response", profile.code
 
 # post request to create a playlist and get its id
 create_playlist = RestClient::Request.execute(method: "post",
@@ -143,7 +136,7 @@ create_playlist = RestClient::Request.execute(method: "post",
 
 RSpec.describe "Successful request", type: :controller do
   describe "post index" do
-    it "returns a 200" do
+    it "returns a 201" do
       response = create_playlist.code
       expect(response).to eq(201)
     end
@@ -172,7 +165,7 @@ add_tracks = RestClient::Request.execute(method: "post",
 
 RSpec.describe "Successful request", type: :controller do
   describe "post index" do
-    it "returns a 200" do
+    it "returns a 201" do
       response = add_tracks.code
       expect(response).to eq(201)
     end
@@ -219,7 +212,7 @@ RSpec.describe "Successful request", type: :controller do
   end
 end
 
-# snapshot id is a proof that the last changes to the playlist went successful
+# snapshot id is a proof that the last changes to the playlist were successful
 snapshot_id = JSON.parse(reorder_tracks)["snapshot_id"]
 
 RSpec.describe Snapshot do
@@ -296,6 +289,16 @@ RSpec.describe "Successful request", type: :controller do
     it "returns a 200" do
       response = get_playlist.code
       expect(response).to eq(200)
+    end
+  end
+end
+
+RSpec.describe CheckInfoPlaylist do
+  describe "get playlist info" do
+    it "checks if the playlist is empty" do
+      content_playlist = CheckInfoPlaylist.new
+      content_playlist.add(get_playlist.body)
+      expect(content_playlist.empty).to be(false)
     end
   end
 end
