@@ -65,6 +65,15 @@ token = RestClient::Request.execute(method: "post",
                                       "client_secret" => client_secret
                                     })
 
+RSpec.describe "Successful request", type: :controller do
+  describe "post index" do
+    it "returns a 200" do
+      response = token.code
+      expect(response).to eq(200)
+    end
+  end
+end
+
 access_token = JSON.parse(token)["access_token"]
 puts "access token = ", access_token
 refresh_token = JSON.parse(token)["refresh_token"]
@@ -84,6 +93,16 @@ if expires_at < DateTime.now
                                             "client_id" => client_id,
                                             "client_secret" => client_secret
                                           })
+
+  RSpec.describe "Successful request", type: :controller do
+    describe "post index" do
+      it "returns a 200" do
+        response = new_token.code
+        expect(response).to eq(200)
+      end
+    end
+  end
+
   access_token = JSON.parse(new_token)["access_token"]
   puts "new access token = ", access_token
 end
@@ -95,8 +114,18 @@ profile = RestClient::Request.execute(method: "get",
                                         "Authorization" => "Bearer #{access_token}"
                                       })
 
+RSpec.describe "Successful request", type: :controller do
+  describe "get index" do
+    it "returns a 200" do
+      response = profile.code
+      expect(response).to eq(200)
+    end
+  end
+end
+
 user_id = JSON.parse(profile)["id"]
 puts "user_id = ", user_id
+puts "get request response", profile.code
 
 # post request to create a playlist and get its id
 create_playlist = RestClient::Request.execute(method: "post",
@@ -111,6 +140,15 @@ create_playlist = RestClient::Request.execute(method: "post",
                                                 "Content-Type" => "application/json",
                                                 "Accept" => "application/json"
                                               })
+
+RSpec.describe "Successful request", type: :controller do
+  describe "post index" do
+    it "returns a 200" do
+      response = create_playlist.code
+      expect(response).to eq(201)
+    end
+  end
+end
 
 playlist_id = JSON.parse(create_playlist)["id"]
 puts "playlist_id = ", playlist_id
@@ -132,6 +170,15 @@ add_tracks = RestClient::Request.execute(method: "post",
                                            "Accept" => "application/json"
                                          })
 
+RSpec.describe "Successful request", type: :controller do
+  describe "post index" do
+    it "returns a 200" do
+      response = add_tracks.code
+      expect(response).to eq(201)
+    end
+  end
+end
+
 snapshot_id = JSON.parse(add_tracks)["snapshot_id"]
 
 RSpec.describe Snapshot do
@@ -143,7 +190,6 @@ RSpec.describe Snapshot do
 
     it "checks if it has the required number of characters" do
       expect(snapshot_id.length).to eq(56)
-      puts "add tracks request = ", add_tracks.body
     end
   end
 end
@@ -164,6 +210,15 @@ reorder_tracks = RestClient::Request.execute(method: "put",
                                                "Accept" => "application/json"
                                              })
 
+RSpec.describe "Successful request", type: :controller do
+  describe "put index" do
+    it "returns a 200" do
+      response = reorder_tracks.code
+      expect(response).to eq(200)
+    end
+  end
+end
+
 # snapshot id is a proof that the last changes to the playlist went successful
 snapshot_id = JSON.parse(reorder_tracks)["snapshot_id"]
 
@@ -176,7 +231,6 @@ RSpec.describe Snapshot do
 
     it "checks if it has the required number of characters" do
       expect(snapshot_id.length).to eq(56)
-      puts "new snapshot id after reorder tracks = ", reorder_tracks.body
     end
   end
 end
@@ -197,6 +251,15 @@ delete_last = RestClient::Request.execute(method: "delete",
                                             "Accept" => "application/json"
                                           })
 
+RSpec.describe "Successful request", type: :controller do
+  describe "delete index" do
+    it "returns a 200" do
+      response = delete_last.code
+      expect(response).to eq(200)
+    end
+  end
+end
+
 snapshot_id = JSON.parse(delete_last)["snapshot_id"]
 
 RSpec.describe Snapshot do
@@ -208,7 +271,6 @@ RSpec.describe Snapshot do
 
     it "checks if it has the required number of characters" do
       expect(snapshot_id.length).to eq(56)
-      puts "new snapshot id after delete last track = ", delete_last.body
     end
   end
 end
@@ -228,6 +290,15 @@ get_playlist = RestClient::Request.execute(method: "get",
                                              "Content-Type" => "application/json",
                                              "Accept" => "application/json"
                                            })
+
+RSpec.describe "Successful request", type: :controller do
+  describe "get index" do
+    it "returns a 200" do
+      response = get_playlist.code
+      expect(response).to eq(200)
+    end
+  end
+end
 
 puts "Get playlist details request body = ", get_playlist.body
 
