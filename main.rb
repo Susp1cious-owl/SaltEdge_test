@@ -257,7 +257,7 @@ snapshot_id = JSON.parse(delete_last)["snapshot_id"]
 
 RSpec.describe Snapshot do
   context "snapshot id is given when an action is successfully performed" do
-    it "checks if snapshot_id has a value" do
+    it "checks if snapshot_id is not null" do
       snapshot = Snapshot.new(snapshot_id)
       snapshot.check_value
     end
@@ -295,7 +295,7 @@ end
 
 RSpec.describe CheckInfoPlaylist do
   describe "get playlist info" do
-    it "checks if the playlist is empty" do
+    it "checks if the playlist is not empty" do
       content_playlist = CheckInfoPlaylist.new
       content_playlist.add(get_playlist.body)
       expect(content_playlist.empty).to be(false)
