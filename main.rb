@@ -46,7 +46,6 @@ sleep 1
 # get the authorization-code
 res = CGI.parse(URI.parse(browser.url).query)
 @authorization_code = res["code"]
-puts "authorization_code = ", @authorization_code
 
 # post request to get the access token, refresh token and the expiry time
 token = RestClient::Request.execute(method: "post",
@@ -69,9 +68,7 @@ RSpec.describe "Successful request", type: :controller do
 end
 
 access_token = JSON.parse(token)["access_token"]
-puts "access token = ", access_token
 refresh_token = JSON.parse(token)["refresh_token"]
-puts "refresh token = ", refresh_token
 expires_in = JSON.parse(token)["expires_in"]
 
 expires_at = DateTime.now + expires_in * 0.00000095 # equivalent of 5 mins added, time of expiration with the current Date and time standards
@@ -118,7 +115,6 @@ RSpec.describe "Successful request", type: :controller do
 end
 
 user_id = JSON.parse(profile)["id"]
-puts "user_id = ", user_id
 
 # post request to create a playlist and get its id
 create_playlist = RestClient::Request.execute(method: "post",
@@ -144,7 +140,6 @@ RSpec.describe "Successful request", type: :controller do
 end
 
 playlist_id = JSON.parse(create_playlist)["id"]
-puts "playlist_id = ", playlist_id
 
 # track id's which can be accessed via right click on spotify as mentioned in the spotify manual
 first_track = "3uCth4TIWyeQDnj3YbAVQB"
@@ -302,8 +297,6 @@ RSpec.describe CheckInfoPlaylist do
     end
   end
 end
-
-puts "Get playlist details request body = ", get_playlist.body
 
 # variables take the values needed for Playlist class
 playlist_name = JSON.parse(get_playlist)["name"]
